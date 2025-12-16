@@ -24,33 +24,53 @@
   background-position: center;
   filter: brightness(0.8);
 }
+/* --- Landing Page Content --- */
+
 .content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
- top: 100px;
-  backdrop-filter: blur(4px);
-  background-color: rgba(0,0,0,0.5);
-  gap: 20px;
+    display: flex;
+    /* Centers the two blocks horizontally */
+    justify-content: center; 
+    /* Centers the two blocks vertically */
+    align-items: center; 
+    
+    position: relative;
+    height: 100vh;
+    width: 100%; /* FIX 4: Use 100% instead of 100vw */
+    
+    /* REMOVED: top: 100px; - This pushes content down */
+    
+    backdrop-filter: blur(4px);
+    background-color: rgba(0,0,0,0.5);
+    gap: 60px; /* Increased gap for better spacing */
 }
 
 .landing_content {
- margin-top: 430px;
-  margin-left: 100px;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  text-align: center;
-  /* background-color: red; */
-  width: 400px;
-  height: 400px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
+    z-index: 1;
+    text-align: left; 
+    width: 450px; /* Set a dedicated width */
+    
+    /* CRITICAL FIX 5: REMOVE ALL BAD POSITIONING RULES */
+    /* REMOVED: margin-top: 430px; */
+    /* REMOVED: margin-left: 100px; */
+    /* REMOVED: transform: translate(-50%, -50%); */
+    
+    display: flex;
+    align-items: flex-start; /* Align title and button to the left */
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
 }
+
+/* You will also need a selector for the right text block. Assuming it is named aboutus_container */
+.aboutus_container {
+    z-index: 1;
+    color: white;
+    width: 500px;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+
 
 .content p,
 .content h1 {
