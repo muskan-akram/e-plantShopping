@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
 import './ProductList.css';
 import CartItem from './CartItem';
-// Assuming you have CartSlice.jsx in the same directory or accessible path.
-// You need to replace this with the actual path to your CartSlice.jsx
-// For the purpose of this task, I'm assuming CartSlice.jsx is where addItem is defined.
-// If you are using Redux, you would also need to import 'useDispatch'.
+// Import Redux hooks and action
+import { useSelector, useDispatch } from 'react-redux'; 
 import { addItem } from './CartSlice'; 
-import { useDispatch } from 'react-redux'; // *** Import useDispatch for Redux functionality
 
 function ProductList({ onHomeClick }) {
     // Redux Dispatch hook
-    const dispatch = useDispatch(); // *** Initialize dispatch for Redux actions
+    const dispatch = useDispatch(); 
+    // Redux Selector hook to get cart items
+    const cartItems = useSelector(state => state.cart.items); // <--- New: Get cart items from Redux store
 
     const [showCart, setShowCart] = useState(false);
-    // The state variable 'showPlants' is declared but not used for navigation 
-    // in the current component's return block (only showCart controls the view). 
-    // I've kept it as per your original code.
     const [showPlants, setShowPlants] = useState(false); 
     
     // State to track which products have been added to the cart
-    const [addedToCart, setAddedToCart] = useState({}); // *** Task: Create addedToCart state
+    // Using an object to quickly check existence by product name
+    const [addedToCart, setAddedToCart] = useState({}); 
+
+    // Task: Calculate total quantity of all items in the cart
+    const calculateTotalQuantity = () => {
+        // Use cartItems from the Redux store
+        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    }; // <--- New: Total quantity calculation
 
     const plantsArray = [
+        // ... (Your plantsArray definition remains here) ...
         {
             category: "Air Purifying Plants",
             plants: [
@@ -29,7 +33,7 @@ function ProductList({ onHomeClick }) {
                     name: "Snake Plant",
                     image: "https://cdn.pixabay.com/photo/2021/01/22/06/04/snake-plant-5939187_1280.jpg",
                     description: "Produces oxygen at night, improving air quality.",
-                    cost: "15" // Removed '$' for easier numeric handling later if needed
+                    cost: "15" 
                 },
                 {
                     name: "Spider Plant",
@@ -210,7 +214,7 @@ function ProductList({ onHomeClick }) {
             ]
         }
     ];
-
+    // ... (Your style objects remain here) ...
     const styleObj = {
         backgroundColor: '#4CAF50',
         color: '#fff!important',
@@ -240,12 +244,9 @@ function ProductList({ onHomeClick }) {
     const handleCartClick = (e) => {
         e.preventDefault();
         setShowCart(true);
-        setShowPlants(false); // Make sure plants view is hidden when cart is shown
+        setShowPlants(false); 
     };
     
-    // Note: The Plants link currently just sets showPlants to true, 
-    // but the component only checks !showCart to display the products. 
-    // This is fine for the current logic where Plants link shows the product list.
     const handlePlantsClick = (e) => {
         e.preventDefault();
         setShowPlants(true); 
@@ -257,17 +258,30 @@ function ProductList({ onHomeClick }) {
         setShowCart(false);
     };
 
-    // *** Task: Create handleAddToCart function
+    // Task: Implement handleAddToCart using Redux addItem action
     const handleAddToCart = (product) => {
         // Dispatch the action to add the product to the cart (Redux action)
-        dispatch(addItem(product)); 
+        dispatch(addItem({
+             name: product.name, 
+             image: product.image, 
+             cost: `$${product.cost}` // Ensure cost includes '$' if your reducer expects it, or pass just the number. 
+                                     // Based on your original array having only the number, 
+                                     // I'll add the '$' here to be consistent with the CartItem display logic.
+        })); 
 
-        // Update the local state to reflect that the product has been added
+        // Update the local state to change the button text/style
+        // This is done locally to avoid fetching data unnecessarily for a simple UI change.
         setAddedToCart((prevState) => ({ 
-            ...prevState, // Spread the previous state to retain existing entries
-            [product.name]: true, // Set the current product's name as a key with value 'true' to mark it as added
+            ...prevState, 
+            [product.name]: true, 
         }));
     };
+
+    // Helper function to check if a product is already in the cart for button state
+    const isAddedToCart = (productName) => {
+        return cartItems.some(item => item.name === productName);
+    }
+
 
     return (
         <div>
@@ -295,6 +309,8 @@ function ProductList({ onHomeClick }) {
                                     <circle cx="184" cy="216" r="12"></circle>
                                     <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path>
                                 </svg>
+                                {/* Task: Display the total quantity of items from Redux store */}
+                                <span className='cart-quantity'>{calculateTotalQuantity()}</span> 
                             </h1>
                         </a>
                     </div>
@@ -302,39 +318,38 @@ function ProductList({ onHomeClick }) {
             </div>
             {/* --- Main Content Section --- */}
             {!showCart ? (
-                // *** Task: Display products when cart is not shown
                 <div className="product-grid">
-                    {/* Loop through each category in plantsArray */}
                     {plantsArray.map((category, index) => (
                         <div key={index}> 
                             <h1>
-                                <div>{category.category}</div> {/* Display the category name */}
+                                <div>{category.category}</div> 
                             </h1>
-                            <div className="product-list"> {/* Container for the list of plant cards */}
-                                {/* Loop through each plant in the current category */}
-                                {category.plants.map((plant, plantIndex) => (
-                                    <div className="product-card" key={plantIndex}> {/* Unique key for each plant card */}
-                                        <img 
-                                            className="product-image" 
-                                            src={plant.image} // Display the plant image
-                                            alt={plant.name} // Alt text for accessibility
-                                        />
-                                        <div className="product-title">{plant.name}</div> {/* Display plant name */}
-                                        
-                                        <div className="product-description">{plant.description}</div> {/* Display plant description */}
-                                        <div className="product-cost">${plant.cost}</div> {/* Display plant cost */}
-                                        
-                                        <button
-                                            className="product-button"
-                                            onClick={() => handleAddToCart(plant)} // Handle adding plant to cart
-                                            // Disable button if product is already in the cart
-                                            disabled={addedToCart[plant.name]} 
-                                        >
-                                            {/* Change button text based on 'addedToCart' state */}
-                                            {addedToCart[plant.name] ? 'Added to Cart' : 'Add to Cart'}
-                                        </button>
-                                    </div>
-                                ))}
+                            <div className="product-list"> 
+                                {category.plants.map((plant, plantIndex) => {
+                                    const itemAlreadyInCart = isAddedToCart(plant.name); // Check Redux state
+                                    return (
+                                        <div className="product-card" key={plantIndex}> 
+                                            <img 
+                                                className="product-image" 
+                                                src={plant.image} 
+                                                alt={plant.name} 
+                                            />
+                                            <div className="product-title">{plant.name}</div> 
+                                            <div className="product-description">{plant.description}</div> 
+                                            <div className="product-cost">${plant.cost}</div> 
+                                            
+                                            <button
+                                                className="product-button"
+                                                onClick={() => handleAddToCart(plant)}
+                                                // Disable button if product is already in the cart (using Redux state check)
+                                                disabled={itemAlreadyInCart} 
+                                            >
+                                                {/* Change button text based on Redux state check */}
+                                                {itemAlreadyInCart ? 'Added to Cart' : 'Add to Cart'}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}
